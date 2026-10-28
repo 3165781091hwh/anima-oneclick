@@ -1,0 +1,82 @@
+{
+  "schema": 1,
+  "runtime": {
+    "name": "ComfyUI Portable",
+    "version": "PINNED",
+    "sources": ["github", "mirror"]
+  },
+  "integrity": {
+    "policy": "size_then_sha",
+    "size_tolerance_pct": 2,
+    "backfill": "首次下载后把实际 sha256 与精确字节数写回本文件，此后按 sha256 校验"
+  },
+  "files": [
+    {
+      "name": "JANIMA_v10 (1).safetensors",
+      "src_name": "JANIMA_v10 (1).safetensors",
+      "dir": "diffusion_models",
+      "size_gb": 3.9,
+      "sha256": null,
+      "sources": ["huggingface", "modelscope"],
+      "license": null,
+      "recipes": ["quality", "base"],
+      "role": "底模"
+    },
+    {
+      "name": "qwen_3_06b_base.safetensors",
+      "src_name": "qwen_3_06b_base.safetensors",
+      "dir": "text_encoders",
+      "size_gb": 1.11,
+      "sha256": null,
+      "sources": ["huggingface", "modelscope"],
+      "license": null,
+      "recipes": ["quality", "base"],
+      "role": "文本编码器"
+    },
+    {
+      "name": "qwen_image_vae.safetensors",
+      "src_name": "qwen_image_vae.safetensors",
+      "dir": "vae",
+      "size_gb": 0.24,
+      "sha256": null,
+      "sources": ["huggingface", "modelscope"],
+      "license": null,
+      "recipes": ["quality", "base"],
+      "role": "VAE"
+    },
+    {
+      "name": "anima-highres-aesthetic-boost.safetensors",
+      "src_name": "anima-highres-aesthetic-boost.safetensors",
+      "dir": "loras",
+      "size_gb": 0.13,
+      "sha256": null,
+      "sources": ["huggingface", "modelscope"],
+      "license": null,
+      "recipes": ["quality"],
+      "role": "高分辨率 / 审美增强"
+    },
+    {
+      "name": "AnimaNEWNSS8.safetensors",
+      "src_name": "Niji Sweet Spot v5.0",
+      "dir": "loras",
+      "size_gb": 0.17,
+      "sha256": null,
+      "sources": ["civitai"],
+      "license": null,
+      "recipes": ["quality"],
+      "role": "风格"
+    },
+    {
+      "name": "anima-turbo-lora-v0.2.safetensors",
+      "src_name": "anima-turbo-lora-v0.2.safetensors",
+      "dir": "loras",
+      "size_gb": 0.14,
+      "sha256": null,
+      "sources": ["huggingface", "modelscope"],
+      "license": null,
+      "recipes": ["quality"],
+      "role": "加速"
+    }
+  ],
+  "totals": { "quality_gb": 5.69, "base_gb": 5.25, "with_runtime_gb": "8–10" }
+}

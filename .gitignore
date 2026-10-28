@@ -1,0 +1,11 @@
+__pycache__/
+*.pyc
+# 运行产物，不进仓库
+plan.json
+state.json
+preflight.json
+result.json
+payload.json
+output/
+Anima_*.png
+*.log

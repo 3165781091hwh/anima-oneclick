@@ -1,0 +1,80 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "anima-oneclick/plan.schema.json",
+  "title": "plan.json",
+  "description": "安装向导产出的后续操作表；只放枚举，参数一律在 presets.json。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "createdAt",
+    "track",
+    "root",
+    "recipe",
+    "entry",
+    "max_side",
+    "save_dir",
+    "phase",
+    "flags",
+    "steps",
+    "last_error"
+  ],
+  "properties": {
+    "schema": { "const": 1 },
+    "createdAt": { "type": "string", "format": "date-time" },
+    "track": { "enum": ["portable", "desktop"] },
+    "root": { "type": "string", "pattern": "^[A-Za-z]:/" },
+    "recipe": { "enum": ["quality", "base"] },
+    "entry": { "enum": ["agent", "console", "webui"] },
+    "max_side": { "enum": [1536, 960, 768] },
+    "save_dir": { "type": ["string", "null"] },
+    "phase": { "enum": ["first", "full", "ready"] },
+    "flags": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "install_style_loras",
+        "register_webui_workflows",
+        "shortcut_console",
+        "announce_after_install"
+      ],
+      "properties": {
+        "install_style_loras": { "type": "boolean" },
+        "register_webui_workflows": { "type": "boolean" },
+        "shortcut_console": { "type": "boolean" },
+        "announce_after_install": { "type": "boolean" }
+      }
+    },
+    "steps": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "enum": ["P0", "P1", "P2", "P3", "P4", "P5", "P6"] }
+    },
+    "last_error": {
+      "type": ["string", "null"],
+      "pattern": "^E(0[1-9]|10)$"
+    }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "recipe": { "const": "quality" } } },
+      "then": { "properties": { "flags": { "properties": { "install_style_loras": { "const": true } } } } },
+      "else": { "properties": { "flags": { "properties": { "install_style_loras": { "const": false } } } } }
+    },
+    {
+      "if": { "properties": { "entry": { "const": "webui" } } },
+      "then": { "properties": { "flags": { "properties": { "register_webui_workflows": { "const": true } } } } },
+      "else": { "properties": { "flags": { "properties": { "register_webui_workflows": { "const": false } } } } }
+    },
+    {
+      "if": { "properties": { "entry": { "const": "console" } } },
+      "then": { "properties": { "flags": { "properties": { "shortcut_console": { "const": true } } } } },
+      "else": { "properties": { "flags": { "properties": { "shortcut_console": { "const": false } } } } }
+    },
+    {
+      "if": { "properties": { "entry": { "const": "agent" } } },
+      "then": { "properties": { "flags": { "properties": { "announce_after_install": { "const": false } } } } },
+      "else": { "properties": { "flags": { "properties": { "announce_after_install": { "const": true } } } } }
+    }
+  ]
+}

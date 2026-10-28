@@ -1,0 +1,766 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Anima · 安装向导</title>
+<style>
+  :root{
+    --paper:#F1F0EB;
+    --paper-2:#FFFFFF;
+    --ink:#0A0A0A;
+    --muted:#767670;
+    --line:#0A0A0A;
+    --blue:#002FA7;
+    --blue-soft:#E7EBF6;
+    --yellow:#E4FF1A;
+    --orange:#FF4D00;
+    --rail:264px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:"Helvetica Neue",Helvetica,Arial,"PingFang SC","Microsoft YaHei",sans-serif;
+    font-size:16px;
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+  }
+  ::selection{background:var(--blue);color:#fff}
+  button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+  input{font:inherit;color:inherit}
+  a{color:var(--blue)}
+  .mono{font-family:ui-monospace,"SFMono-Regular",Menlo,Consolas,"Liberation Mono",monospace}
+  .micro{font-size:11px;letter-spacing:.14em;text-transform:uppercase}
+
+  /* ---------- top bar ---------- */
+  .top{
+    background:var(--ink);color:#fff;
+    display:flex;align-items:center;justify-content:space-between;
+    gap:24px;padding:0 24px;height:56px;
+    position:sticky;top:0;z-index:40;
+  }
+  .top .brand{display:flex;align-items:baseline;gap:12px;white-space:nowrap}
+  .top .brand b{font-size:15px;letter-spacing:.18em;font-weight:600}
+  .top .brand span{font-size:11px;letter-spacing:.14em;color:#A9A9A4}
+  .top .right{display:flex;align-items:center;gap:18px;font-size:11px;letter-spacing:.12em;color:#CFCFC9}
+  .dot{width:8px;height:8px;background:var(--yellow);display:inline-block;margin-right:8px}
+
+  /* ---------- masthead ---------- */
+  .masthead{
+    display:flex;align-items:flex-end;justify-content:space-between;
+    gap:32px;padding:36px 24px 18px;border-bottom:1px solid var(--line);
+  }
+  .masthead h1{
+    margin:0;font-size:clamp(34px,4.4vw,58px);line-height:1.02;
+    letter-spacing:-.035em;font-weight:500;
+  }
+  .masthead h1 em{font-style:normal;color:var(--blue);}
+  .masthead .aside{text-align:right;font-size:12px;color:var(--muted);line-height:1.7}
+  .masthead .aside b{display:block;color:var(--ink);font-weight:600;letter-spacing:.02em}
+
+  /* ---------- layout ---------- */
+  .layout{display:grid;grid-template-columns:var(--rail) 1fr;align-items:start}
+  .rail{
+    border-right:1px solid var(--line);padding:28px 24px 80px;
+    position:sticky;top:56px;height:calc(100vh - 56px);
+    display:flex;flex-direction:column;gap:2px;
+  }
+  .rail .rail-label{color:var(--muted);margin-bottom:12px}
+  .rail a{
+    display:grid;grid-template-columns:38px 1fr;gap:10px;align-items:baseline;
+    padding:11px 0;border-top:1px solid rgba(10,10,10,.16);
+    text-decoration:none;color:var(--muted);font-size:13px;transition:.15s;
+  }
+  .rail a:last-of-type{border-bottom:1px solid rgba(10,10,10,.16)}
+  .rail a i{font-style:normal;font-size:11px;letter-spacing:.1em}
+  .rail a:hover{color:var(--ink)}
+  .rail a.active{color:var(--ink)}
+  .rail a.active i{color:var(--blue)}
+  .rail a.done i{color:var(--blue)}
+  .rail .foot{margin-top:auto;font-size:11px;color:var(--muted);line-height:1.8;letter-spacing:.02em}
+  .rail .foot b{color:var(--ink)}
+
+  main{padding:0 24px 150px;min-width:0}
+
+  /* ---------- section ---------- */
+  .sec{border-bottom:1px solid var(--line);padding:30px 0 34px;scroll-margin-top:70px}
+  .sec-head{display:grid;grid-template-columns:120px 1fr;gap:20px;align-items:start;margin-bottom:24px}
+  .qno{
+    font-size:72px;line-height:.8;font-weight:300;letter-spacing:-.06em;
+    color:var(--ink);font-variant-numeric:tabular-nums;
+  }
+  .qno small{display:block;font-size:10px;letter-spacing:.16em;color:var(--muted);margin-top:12px;font-weight:500}
+  .qtitle h2{margin:0 0 6px;font-size:23px;line-height:1.25;font-weight:600;letter-spacing:-.01em}
+  .qtitle p{margin:0;color:var(--muted);font-size:13px;max-width:62ch}
+
+  /* preflight */
+  .checks{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--line)}
+  .check{padding:16px 16px 16px 0;border-right:1px solid rgba(10,10,10,.14)}
+  .check:last-child{border-right:0}
+  .check .k{font-size:10px;letter-spacing:.14em;color:var(--muted);text-transform:uppercase}
+  .check .v{font-size:22px;letter-spacing:-.02em;margin-top:8px;font-variant-numeric:tabular-nums}
+  .check .v span{font-size:12px;color:var(--muted);letter-spacing:0}
+  .check .s{margin-top:6px;font-size:11px;color:var(--blue);letter-spacing:.06em}
+  .verdict{
+    margin-top:18px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+    background:var(--blue);color:#fff;padding:15px 18px;
+  }
+  .verdict b{font-size:16px;letter-spacing:.02em}
+  .verdict span{font-size:12px;color:#C9D2EE}
+  .verdict .tag{background:var(--yellow);color:var(--ink);padding:3px 8px;font-size:10px;letter-spacing:.12em}
+  .note{margin-top:12px;font-size:11px;color:var(--muted)}
+
+  /* path */
+  .pathbox{display:grid;grid-template-columns:1fr auto;border:1px solid var(--line);background:var(--paper-2)}
+  .pathbox input{
+    border:0;background:transparent;padding:18px 20px;font-size:18px;width:100%;
+    outline:none;letter-spacing:-.01em;
+  }
+  .pathbox input:focus{background:#FFFEF2}
+  .pathbox button{
+    border-left:1px solid var(--line);padding:0 26px;font-size:12px;letter-spacing:.14em;
+    text-transform:uppercase;transition:.15s;
+  }
+  .pathbox button:hover{background:var(--ink);color:#fff}
+  .pathmeta{display:flex;justify-content:space-between;gap:16px;margin-top:10px;font-size:12px;color:var(--muted);flex-wrap:wrap}
+  .chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+  .chip{
+    border:1px solid var(--line);padding:7px 12px;font-size:12px;background:transparent;transition:.15s;
+  }
+  .chip:hover{background:var(--ink);color:#fff}
+  .chip.on{background:var(--blue);border-color:var(--blue);color:#fff}
+
+  /* options */
+  .opt{
+    display:grid;grid-template-columns:26px 1fr auto;gap:16px;align-items:start;
+    padding:20px 0 20px 0;border-top:1px solid rgba(10,10,10,.16);
+    background:transparent;text-align:left;width:100%;position:relative;
+  }
+  .opt:last-of-type{border-bottom:1px solid rgba(10,10,10,.16)}
+  .opt::before{
+    content:"";position:absolute;left:-12px;top:0;bottom:0;width:4px;background:transparent;
+  }
+  .opt:hover .mark{border-color:var(--blue)}
+  .opt.on::before{background:var(--blue)}
+  .opt.on .t b{color:var(--blue)}
+  .mark{
+    width:18px;height:18px;border:1px solid var(--line);border-radius:50%;
+    margin-top:5px;display:grid;place-items:center;transition:.15s;
+  }
+  .opt.on .mark{border-color:var(--blue)}
+  .opt.on .mark::after{content:"";width:9px;height:9px;background:var(--blue);border-radius:50%}
+  .opt .t b{display:block;font-size:16px;font-weight:600;letter-spacing:-.01em}
+  .opt .t span{display:block;color:var(--muted);font-size:13px;margin-top:5px;max-width:56ch}
+  .opt .tag{
+    font-size:10px;letter-spacing:.12em;padding:3px 7px;white-space:nowrap;margin-top:4px;
+  }
+  .tag.rec{background:var(--yellow);color:var(--ink)}
+  .tag.ghost{border:1px solid rgba(10,10,10,.3);color:var(--muted)}
+
+  /* footer action bar */
+  .actionbar{
+    position:fixed;left:0;right:0;bottom:0;z-index:35;background:var(--paper);
+    border-top:1px solid var(--line);padding:14px 24px;
+    display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+  }
+  .actionbar .left{font-size:12px;color:var(--muted);margin-right:auto}
+  .btn{
+    padding:15px 22px;font-size:13px;letter-spacing:.1em;text-transform:uppercase;
+    border:1px solid var(--line);background:transparent;transition:.15s;white-space:nowrap;
+  }
+  .btn:hover{background:var(--ink);color:#fff}
+  .btn.primary{background:var(--blue);border-color:var(--blue);color:#fff}
+  .btn.primary:hover{background:var(--ink);border-color:var(--ink)}
+  .btn.ghost{border-color:rgba(10,10,10,.28);color:var(--muted)}
+  .btn[disabled]{opacity:.35;cursor:not-allowed;background:transparent;color:var(--ink)}
+  .btn:focus-visible,.opt:focus-visible,.chip:focus-visible,.pathbox input:focus-visible{outline:2px solid var(--orange);outline-offset:2px}
+
+  /* ---------- progress ---------- */
+  .progress-view{display:none}
+  body.installing .wizard-view{display:none}
+  body.installing .progress-view{display:block}
+  body.installing .rail{display:none}
+  body.installing .masthead{display:none}
+  body.installing .layout{grid-template-columns:1fr}
+  body.installing main{padding:0 24px 70px}
+  .prog-head{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;padding:34px 0 20px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+  .prog-head h2{margin:0;font-size:clamp(26px,3.2vw,40px);letter-spacing:-.03em;font-weight:500}
+  .prog-head .pct{font-size:56px;line-height:1;font-weight:300;letter-spacing:-.05em;font-variant-numeric:tabular-nums}
+  .prog-head .pct small{font-size:14px;letter-spacing:.1em;color:var(--muted);margin-left:4px}
+  .steps{margin-top:8px}
+  .step{
+    display:grid;grid-template-columns:56px 1fr 150px;gap:16px;align-items:baseline;
+    padding:16px 0;border-bottom:1px solid rgba(10,10,10,.14);
+  }
+  .step .id{font-size:11px;letter-spacing:.12em;color:var(--muted)}
+  .step .name{font-size:15px}
+  .step .desc{display:block;font-size:12px;color:var(--muted);margin-top:3px}
+  .step .st{font-size:11px;letter-spacing:.12em;text-transform:uppercase;text-align:right;color:var(--muted)}
+  .step.run .id,.step.run .name{color:var(--blue)}
+  .step.run .st{color:var(--blue)}
+  .step.run .st::before{content:"▸ ";}
+  .step.ok .st{color:var(--ink)}
+  .step.ok .st::before{content:"✓ ";}
+  .bar{height:2px;background:rgba(10,10,10,.12);margin-top:18px;position:relative;overflow:hidden}
+  .bar i{position:absolute;left:0;top:0;bottom:0;width:0;background:var(--blue);transition:width .5s linear}
+  .log{
+    margin-top:22px;background:var(--ink);color:#D9D9D3;padding:16px 18px;
+    font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;line-height:1.9;
+    height:170px;overflow:auto;
+  }
+  .log b{color:var(--yellow);font-weight:400}
+  .log .dim{color:#7E7E78}
+  .done-panel{
+    display:none;margin-top:26px;border:1px solid var(--line);background:var(--paper-2);padding:22px;
+  }
+  .done-panel.show{display:block}
+  .done-panel h3{margin:0 0 6px;font-size:20px;letter-spacing:-.01em}
+  .done-panel p{margin:0 0 16px;color:var(--muted);font-size:13px}
+  .config{
+    background:#0A0A0A;color:#D9D9D3;padding:14px;overflow:auto;max-height:210px;
+    font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11.5px;line-height:1.7;
+  }
+  .plain{list-style:none;margin:0;padding:0;counter-reset:p;border-top:1px solid rgba(10,10,10,.2)}
+  .plain li{
+    counter-increment:p;position:relative;padding:11px 0 11px 34px;
+    border-bottom:1px solid rgba(10,10,10,.12);font-size:13px;line-height:1.6;
+  }
+  .plain li::before{
+    content:counter(p,decimal-leading-zero);position:absolute;left:0;top:11px;
+    font-size:10px;letter-spacing:.1em;color:var(--muted);
+  }
+  .plain-note{margin:12px 0 0;font-size:11px;color:var(--muted);line-height:1.7}
+  .done-actions{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap}
+
+  /* ---------- modal ---------- */
+  .modal{
+    position:fixed;inset:0;z-index:60;display:none;place-items:center;
+    background:rgba(10,10,10,.55);padding:24px;
+  }
+  .modal.open{display:grid}
+  .sheet{
+    background:var(--paper);max-width:560px;width:100%;padding:30px 30px 24px;
+    border:1px solid var(--ink);box-shadow:12px 12px 0 rgba(10,10,10,.18);
+  }
+  .sheet .micro{color:var(--muted)}
+  .sheet h3{margin:10px 0 12px;font-size:26px;letter-spacing:-.03em;font-weight:600}
+  .sheet p{margin:0 0 8px;font-size:15px}
+  .sheet .path{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13px;color:var(--blue);word-break:break-all}
+  .sheet .act{display:flex;gap:10px;margin-top:22px;flex-wrap:wrap}
+  .sheet small{display:block;margin-top:14px;color:var(--muted);font-size:11px}
+
+  @media (max-width:960px){
+    .layout{grid-template-columns:1fr}
+    .rail{position:static;height:auto;border-right:0;border-bottom:1px solid var(--line);
+      flex-direction:row;gap:6px;padding:14px 24px;overflow:auto}
+    .rail .rail-label,.rail .foot{display:none}
+    .rail a{grid-template-columns:auto;border-top:0;padding:8px 12px;border:1px solid rgba(10,10,10,.2);white-space:nowrap}
+    .rail a i{margin-right:6px}
+    .checks{grid-template-columns:repeat(2,1fr)}
+    .qno{font-size:52px}
+    .sec-head{grid-template-columns:80px 1fr}
+    .step{grid-template-columns:44px 1fr;gap:10px}
+    .step .st{grid-column:2;text-align:left}
+    .masthead{flex-direction:column;align-items:flex-start;gap:14px}
+    .masthead .aside{text-align:left}
+  }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="brand"><b>ANIMA</b><span>ONE-CLICK DEPLOY</span></div>
+  <div class="right">
+    <span><span class="dot"></span>原型 · 未接后端</span>
+    <span class="mono">v1.0 / 2026-10</span>
+  </div>
+</header>
+
+<div class="masthead">
+  <h1>安装<em>选项</em><br>三步，然后等图。</h1>
+  <div class="aside">
+    <b>全中文，无术语。</b>
+    可以都改；不想选就点「全部用推荐值」。<br>
+    装好之后也能改，不用重装。
+  </div>
+</div>
+
+<div class="layout">
+  <nav class="rail" aria-label="步骤">
+    <div class="rail-label micro">过程 / PROCESS</div>
+    <a href="#s0" data-nav="0"><i>00</i><span>预检</span></a>
+    <a href="#s1" data-nav="1"><i>01</i><span>装在哪里</span></a>
+    <a href="#s2" data-nav="2"><i>02</i><span>模型与工作流</span></a>
+    <a href="#s3" data-nav="3"><i>03</i><span>工作方式</span></a>
+    <a href="#s4" data-nav="4"><i>04</i><span>开始安装</span></a>
+    <div class="foot">
+      <b>这套东西会做什么</b><br>
+      检查电脑 → 装出图引擎 → 出第一张图 → 补齐配方 → 交给您。<br><br>
+      您只需要：说一句话、点一次按钮、看一张图。
+    </div>
+  </nav>
+
+  <main>
+    <!-- ================= wizard ================= -->
+    <div class="wizard-view">
+
+      <section class="sec" id="s0">
+        <div class="sec-head">
+          <div class="qno">00<small>PREFLIGHT</small></div>
+          <div class="qtitle">
+            <h2>先看看这台电脑</h2>
+            <p>这一页不是问您，是给您看。不达标不会说「失败」，会给三条出路。</p>
+          </div>
+        </div>
+        <div class="checks">
+          <div class="check"><div class="k">显卡</div><div class="v">8 <span>GB 显存</span></div><div class="s">可以流畅运行</div></div>
+          <div class="check"><div class="k">驱动</div><div class="v">617.42</div><div class="s">已达标</div></div>
+          <div class="check"><div class="k">磁盘</div><div class="v">218 <span>GB 可用</span></div><div class="s">足够</div></div>
+          <div class="check"><div class="k">网络</div><div class="v">正常</div><div class="s">将自动换源</div></div>
+        </div>
+        <div class="verdict">
+          <span class="tag">结论</span>
+          <b>可以流畅运行</b>
+          <span>按推荐配方安装，一张图几十秒。</span>
+        </div>
+        <div class="note">原型示例读数。正式版由 <span class="mono">preflight.py</span> 实测填入；6GB 显存抽测，4GB 与无独显只给「可能可以」与三条出路。</div>
+      </section>
+
+      <section class="sec" id="s1">
+        <div class="sec-head">
+          <div class="qno">01<small>LOCATION</small></div>
+          <div class="qtitle">
+            <h2>装在哪里？</h2>
+            <p>提示词、成片、配方会分别放在这个位置的子文件夹里，只问这一次。</p>
+          </div>
+        </div>
+        <div class="pathbox">
+          <input id="path" spellcheck="false" value="E:\AnimaAssets" aria-label="安装位置">
+          <button type="button" id="browse">更改</button>
+        </div>
+        <div class="pathmeta">
+          <span>剩余 <b id="free">218 GB</b>，建议预留 30GB</span>
+          <span class="mono" id="derived">E:\AnimaAssets\{input · output · workflows}</span>
+        </div>
+        <div class="chips" id="pathChips">
+          <button class="chip" type="button" data-path="E:\AnimaAssets">E:\AnimaAssets</button>
+          <button class="chip" type="button" data-path="D:\AnimaAssets">D:\AnimaAssets</button>
+          <button class="chip" type="button" data-path="C:\AnimaAssets">C:\AnimaAssets</button>
+        </div>
+      </section>
+
+      <section class="sec" id="s2">
+        <div class="sec-head">
+          <div class="qno">02<small>MODEL</small></div>
+          <div class="qtitle">
+            <h2>模型与工作流</h2>
+            <p>只决定一件事：要不要那三种「风格滤镜」。名字不重要，效果说话。</p>
+          </div>
+        </div>
+        <div id="optModel">
+          <button class="opt on" type="button" data-v="A" role="radio" aria-checked="true">
+            <span class="mark" aria-hidden="true"></span>
+            <span class="t"><b>A. 使用作者推荐的模型链</b><span>效果较好，出图快。（以 RTX 4060 为例，8–20s 一张）</span></span>
+            <span class="tag rec">推荐</span>
+          </button>
+          <button class="opt" type="button" data-v="B" role="radio" aria-checked="false">
+            <span class="mark" aria-hidden="true"></span>
+            <span class="t"><b>B. 只安装基础模型</b><span>能满足基本生图需求，可拓展性强。（以 RTX 4060 为例，30–60s 一张）</span></span>
+            <span class="tag ghost">更轻</span>
+          </button>
+        </div>
+      </section>
+
+      <section class="sec" id="s3">
+        <div class="sec-head">
+          <div class="qno">03<small>WORKFLOW</small></div>
+          <div class="qtitle">
+            <h2>以后怎么用？</h2>
+            <p>装完只按这里告诉您入口。之后想换，跟我说一句就行。</p>
+          </div>
+        </div>
+        <div id="optUsage">
+          <button class="opt on" type="button" data-v="A" role="radio" aria-checked="true">
+            <span class="mark" aria-hidden="true"></span>
+            <span class="t"><b>A. 全由 Agent 托管，只需与 Agent 对话即可生图</b><span>token 花费量略高，适合懒人。</span></span>
+            <span class="tag rec">最省事</span>
+          </button>
+          <button class="opt" type="button" data-v="B" role="radio" aria-checked="false">
+            <span class="mark" aria-hidden="true"></span>
+            <span class="t"><b>B. 由 Agent 生提示词，您使用可视化「简易操作台」生图</b><span>适合小白。</span></span>
+            <span class="tag ghost">可点选</span>
+          </button>
+          <button class="opt" type="button" data-v="C" role="radio" aria-checked="false">
+            <span class="mark" aria-hidden="true"></span>
+            <span class="t"><b>C. 由 Agent 生提示词，您使用 ComfyUI WebUI 生图</b><span>适合想入门 ComfyUI 的人，容易进阶。</span></span>
+            <span class="tag ghost">可进阶</span>
+          </button>
+        </div>
+      </section>
+
+      <section class="sec" id="s4" style="border-bottom:0">
+        <div class="sec-head">
+          <div class="qno">04<small>CONFIRM</small></div>
+          <div class="qtitle">
+            <h2>就这些</h2>
+            <p>点「开始安装」后可以去做别的。下载会在开始前告诉您大概多大。</p>
+          </div>
+        </div>
+        <div class="actionbar">
+          <div class="left" id="summary">位置 E:\AnimaAssets · 推荐链 · Agent 托管</div>
+          <button class="btn ghost" type="button" id="resume" hidden>恢复上次安装</button>
+          <button class="btn" type="button" id="defaults">全部用推荐值</button>
+          <button class="btn primary" type="button" id="start">开始安装</button>
+        </div>
+      </section>
+    </div>
+
+    <!-- ================= progress ================= -->
+    <div class="progress-view">
+      <div class="prog-head">
+        <div>
+          <div class="micro" style="color:var(--muted);margin-bottom:10px">INSTALLING / 演示进度</div>
+          <h2 id="progTitle">正在安装</h2>
+        </div>
+        <div class="pct"><span id="pct">0</span><small>%</small></div>
+      </div>
+      <div class="bar"><i id="barFill"></i></div>
+      <div class="steps" id="steps"></div>
+      <div class="log" id="log"></div>
+      <div class="done-panel" id="done">
+        <h3>装好了</h3>
+        <p id="doneNote">桌面上多了一个「Anima 生图」快捷方式。双击它，等浏览器打开，就可以说「画一张……」。</p>
+        <div class="micro" style="color:var(--muted);margin-bottom:10px">接下来会发生什么</div>
+        <ol class="plain" id="config"></ol>
+        <p class="plain-note">上面这份说明会同时生成一份「后续操作表」，交给您的 Agent 执行；您不用看懂它。</p>
+        <div class="done-actions">
+          <button class="btn primary" type="button" id="download">保存后续操作表</button>
+          <button class="btn" type="button" id="copyPlan">复制给 Agent</button>
+          <button class="btn" type="button" id="openConsole">打开操作台</button>
+          <button class="btn ghost" type="button" id="again">重新演示</button>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- size modal -->
+<div class="modal" id="sizeModal" role="dialog" aria-modal="true" aria-labelledby="sizeTitle">
+  <div class="sheet">
+    <div class="micro">DOWNLOAD / 开始之前</div>
+    <h3 id="sizeTitle">需要下载约 8–10GB</h3>
+    <p>包含出图引擎本体和本次所需的素材文件，装在下面这个位置：</p>
+    <p class="path" id="modalPath">E:\AnimaAssets</p>
+    <p>按当前网络，大概需要一段时间。您现在可以去做别的，装好我叫您。</p>
+    <div class="act">
+      <button class="btn primary" type="button" id="confirmStart">开始安装</button>
+      <button class="btn" type="button" id="cancelStart">再改改</button>
+    </div>
+    <small>正式版会先测一次真实下载速度；低于 1MB/s 自动换源，且这句话只在点击后出现。</small>
+  </div>
+</div>
+
+<script>
+(function(){
+  const DEFAULTS = { root:"E:\\AnimaAssets", model:"A", usage:"A" };
+  const KEY = "anima.installer.state";
+
+  const $  = (s,r=document)=>r.querySelector(s);
+  const $$ = (s,r=document)=>[...r.querySelectorAll(s)];
+
+  let state = load() || { ...DEFAULTS, started:false, completed:false, step:0 };
+
+  /* ---------- persistence ---------- */
+  function load(){
+    try{ return JSON.parse(localStorage.getItem(KEY)||"null"); }catch(e){ return null; }
+  }
+  function save(){
+    localStorage.setItem(KEY, JSON.stringify(state));
+  }
+
+  /* ---------- render ---------- */
+  function paint(){
+    $("#path").value = state.root;
+    $("#derived").textContent = state.root + "\\{input · output · workflows}";
+    $$("#optModel .opt").forEach(b=>{
+      const on = b.dataset.v === state.model;
+      b.classList.toggle("on", on);
+      b.setAttribute("aria-checked", on ? "true" : "false");
+    });
+    $$("#optUsage .opt").forEach(b=>{
+      const on = b.dataset.v === state.usage;
+      b.classList.toggle("on", on);
+      b.setAttribute("aria-checked", on ? "true" : "false");
+    });
+    const modelTxt = state.model === "A" ? "推荐链" : "基础模型";
+    const useTxt = { A:"Agent 托管", B:"简易操作台", C:"ComfyUI WebUI" }[state.usage];
+    $("#summary").textContent = `位置 ${state.root} · ${modelTxt} · ${useTxt}`;
+    $("#modalPath").textContent = state.root;
+    $("#resume").hidden = !(state.started && !state.completed);
+  }
+
+  /* ---------- events ---------- */
+  $("#path").addEventListener("input", e=>{
+    state.root = e.target.value.trim() || DEFAULTS.root;
+    save(); paint();
+  });
+  $("#browse").addEventListener("click", ()=>{
+    const i = $("#path");
+    if(window.showDirectoryPicker){
+      window.showDirectoryPicker().then(h=>{
+        state.root = "选定目录\\" + h.name;
+        save(); paint();
+      }).catch(()=>i.focus());
+    } else { i.focus(); i.select(); }
+  });
+  $$("#pathChips .chip").forEach(c=>c.addEventListener("click",()=>{
+    state.root = c.dataset.path; save(); paint();
+  }));
+  $$("#optModel .opt").forEach(b=>b.addEventListener("click",()=>{
+    state.model = b.dataset.v; save(); paint();
+  }));
+  $$("#optUsage .opt").forEach(b=>b.addEventListener("click",()=>{
+    state.usage = b.dataset.v; save(); paint();
+  }));
+
+  $("#defaults").addEventListener("click",()=>{
+    state = { ...state, ...DEFAULTS }; save(); paint(); showSize();
+  });
+  $("#start").addEventListener("click", showSize);
+  $("#cancelStart").addEventListener("click",()=>$("#sizeModal").classList.remove("open"));
+  $("#confirmStart").addEventListener("click",()=>{
+    $("#sizeModal").classList.remove("open");
+    startInstall(false);
+  });
+  $("#resume").addEventListener("click",()=>startInstall(true));
+  $("#again").addEventListener("click",()=>{
+    document.body.classList.remove("installing");
+    $("#done").classList.remove("show");
+    state = {...state, started:false, completed:false, step:0};
+    save(); paint();
+    window.scrollTo({top:0,behavior:"smooth"});
+  });
+  $("#download").addEventListener("click",()=>{
+    const blob = new Blob([JSON.stringify(plan(),null,2)],{type:"application/json"});
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "plan.json";
+    a.click();
+    URL.revokeObjectURL(a.href);
+  });
+  $("#copyPlan").addEventListener("click", async ()=>{
+    const text = JSON.stringify(plan(),null,2);
+    const btn = $("#copyPlan");
+    try{
+      await navigator.clipboard.writeText(text);
+      btn.textContent = "已复制";
+    }catch(e){
+      const ta = document.createElement("textarea");
+      ta.value = text; document.body.appendChild(ta); ta.select();
+      try{ document.execCommand("copy"); btn.textContent = "已复制"; }catch(e2){ btn.textContent = "复制失败"; }
+      ta.remove();
+    }
+    setTimeout(()=>{ btn.textContent = "复制给 Agent"; }, 1600);
+  });
+  $("#openConsole").addEventListener("click",()=>{
+    const p = plan();
+    const w = window.open("../console/console.html?recipe=" + p.recipe + "&max=" + p.max_side,"_blank");
+    if(!w) alert("浏览器拦住了新窗口，请允许弹出窗口后再试。");
+  });
+
+  /* ---------- size modal ---------- */
+  function showSize(){
+    if(!state.root){ $("#path").focus(); return; }
+    $("#modalPath").textContent = state.root;
+    $("#sizeModal").classList.add("open");
+    $("#confirmStart").focus();
+  }
+  document.addEventListener("keydown",e=>{
+    if(e.key==="Escape") $("#sizeModal").classList.remove("open");
+  });
+  $("#sizeModal").addEventListener("click",e=>{
+    if(e.target.id === "sizeModal") $("#sizeModal").classList.remove("open");
+  });
+
+  /* ---------- install simulation ---------- */
+  function stepsFor(){
+    const quality = state.model === "A";
+    const usage = state.usage;
+    return [
+      ["P0","预检","显卡、驱动、内存、磁盘、网络、旧环境、端口","已通过"],
+      ["P1","环境","下载引擎与素材、解压、接上素材目录","约 2 分钟"],
+      ["P2","首图", quality ? "按推荐配方出第一张图" : "按基础配方出第一张图","出图成功"],
+      ["P3","基线", quality ? "按作者推荐配方出一张基线图" : "按基础配方出一张基线图","出图成功"],
+      ["P4","验收","7 条，含「关掉再开还能出图」","7/7 通过"],
+      ["P5","交接","快捷方式、三个按钮、一张卡片","已放到桌面"],
+      ["P6","告知", usage === "A" ? "仅操作台 / WebUI 需要告知" : "告知入口与关闭方式", usage === "A" ? "不适用" : "已告知"]
+    ];
+  }
+  let STEPS = stepsFor();
+  const DUR = [800, 2200, 1700, 1500, 1400, 900, 700];
+  let timer = null;
+
+  function startInstall(resume){
+    STEPS = stepsFor();
+    document.body.classList.add("installing");
+    window.scrollTo({top:0,behavior:"instant"});
+    $("#done").classList.remove("show");
+    state.started = true; state.completed = false;
+    let i = resume ? Math.min(state.step||0, STEPS.length-1) : 0;
+    state.step = i;
+    save();
+
+    const box = $("#steps");
+    box.innerHTML = STEPS.map(([id,name,desc],idx)=>{
+      const st = idx < i ? "ok" : "";
+      return `<div class="step ${st}" data-i="${idx}">
+        <div class="id">${id}</div>
+        <div class="name">${name}${resume && idx===i ? " · 续装" : ""}<span class="desc">${desc}</span></div>
+        <div class="st">${idx < i ? "已完成" : "待机"}</div>
+      </div>`;
+    }).join("");
+
+    $("#log").innerHTML = `<div class="dim">${resume ? "从上次中断处继续。" : "开始安装。"} 演示模式，不写入磁盘。</div>`;
+    $("#progTitle").textContent = resume ? "继续安装" : "正在安装";
+    tick(i);
+  }
+
+  function tick(i){
+    const row = $(`.step[data-i="${i}"]`);
+    if(row){
+      row.classList.add("run");
+      $(".st",row).textContent = "进行中";
+      if(i === 0) row.classList.add("ok"), row.classList.remove("run"), $(".st",row).textContent = "已通过";
+    }
+    logLine(i, "start");
+    const total = DUR.reduce((a,b)=>a+b,0);
+    const before = DUR.slice(0,i).reduce((a,b)=>a+b,0);
+    let elapsed = 0;
+    const dur = DUR[i];
+    const t0 = performance.now();
+
+    timer = requestAnimationFrame(function loop(now){
+      elapsed = now - t0;
+      const p = Math.min(1, elapsed/dur);
+      const pct = Math.round(((before + dur*p)/total)*100);
+      $("#pct").textContent = pct;
+      $("#barFill").style.width = pct + "%";
+      if(p < 1){ timer = requestAnimationFrame(loop); return; }
+      finishStep(i, total, before + dur);
+    });
+  }
+
+  function finishStep(i, total, done){
+    const row = $(`.step[data-i="${i}"]`);
+    if(row){
+      row.classList.remove("run");
+      row.classList.add("ok");
+      $(".st",row).textContent = STEPS[i][3];
+    }
+    logLine(i, "done");
+    const pct = Math.round((done/total)*100);
+    $("#pct").textContent = pct;
+    $("#barFill").style.width = pct + "%";
+
+    if(i < STEPS.length - 1){
+      state.step = i + 1; save();
+      tick(i + 1);
+    } else {
+      state.completed = true; state.step = STEPS.length; save();
+      logLine(-1, "end");
+      $("#progTitle").textContent = "装好了";
+      $("#done").classList.add("show");
+      $("#config").innerHTML = plainSummary().map(t=>`<li>${t}</li>`).join("");
+      $("#doneNote").textContent = handoffText();
+      $("#openConsole").hidden = plan().entry !== "console";
+      $$(".rail a").forEach(a=>a.classList.add("done"));
+      paint();
+      setTimeout(()=>$("#done").scrollIntoView({behavior:"smooth",block:"center"}), 120);
+    }
+  }
+
+  function logLine(i, kind){
+    const L = $("#log");
+    const line = document.createElement("div");
+    const now = new Date().toLocaleTimeString("zh-CN",{hour12:false});
+    if(kind === "start"){
+      line.innerHTML = `<b>${now}</b> ${STEPS[i][0]} ${STEPS[i][1]} …`;
+    } else if(kind === "done"){
+      line.innerHTML = `<span class="dim">${now}</span> ${STEPS[i][3]}`;
+    } else {
+      line.innerHTML = `<b>${now}</b> 完成。这一版的选择已经记下（示例）。`;
+    }
+    L.appendChild(line);
+    L.scrollTop = L.scrollHeight;
+  }
+
+  function handoffText(){
+    if(state.usage === "B") return "双击桌面上的「打开操作台」，或跟我说「打开操作台」。";
+    if(state.usage === "C") return "浏览器打开 http://127.0.0.1:8188；关掉那个窗口，出图引擎就会停。";
+    return "不需要额外入口。直接跟我说「画一张……」，我来出图。";
+  }
+
+  /* ---------- plan（后续操作表，只有枚举值） ---------- */
+  function rootPath(){ return (state.root || "").replace(/\\+$/,""); }
+  function rootFwd(){ return rootPath().replace(/\\/g,"/"); }
+
+  function plan(){
+    const recipe = state.model === "A" ? "quality" : "base";
+    const usage = state.usage;
+    const entry = { A:"agent", B:"console", C:"webui" }[usage] || "agent";
+    const ids = STEPS.map(s=>s[0]);
+    return {
+      schema: 1,
+      createdAt: new Date().toISOString(),
+      track: "portable",
+      root: rootFwd(),
+      recipe,
+      entry,
+      max_side: 1536,
+      save_dir: rootFwd() ? rootFwd() + "/output" : null,
+      phase: state.completed ? "ready" : ((state.step || 0) <= 2 ? "first" : "full"),
+      flags: {
+        install_style_loras: recipe === "quality",
+        register_webui_workflows: entry === "webui",
+        shortcut_console: entry === "console",
+        announce_after_install: entry !== "agent"
+      },
+      steps: ids.slice(0, state.completed ? ids.length : (state.step || 0)),
+      last_error: null
+    };
+  }
+
+  function plainSummary(){
+    const p = plan();
+    const where = p.root ? "装在 " + p.root : "装在空间最大的盘";
+    const last = p.entry === "console" ? "之后双击桌面「Anima 生图」就能自己画。"
+      : p.entry === "webui" ? "之后打开浏览器里的画图界面，自己挑配方出图。"
+      : "之后跟我说一句「画一张……」，我来出图。";
+    return [
+      "我先检查这台电脑，确认能跑。",
+      "需要下载约 8–10GB，" + where + "。",
+      "装好后我先出一张图给您看。",
+      last,
+      "想换画法或换盘，跟我说，不用重装。"
+    ];
+  }
+
+  /* ---------- nav highlight ---------- */
+  const navs = $$(".rail a");
+  const secs = $$(".sec");
+  const io = new IntersectionObserver(es=>{
+    es.forEach(e=>{
+      if(e.isIntersecting){
+        navs.forEach(a=>a.classList.toggle("active", a.getAttribute("href") === "#"+e.target.id));
+      }
+    });
+  },{rootMargin:"-25% 0px -60% 0px"});
+  secs.forEach(s=>io.observe(s));
+
+  paint();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,14 @@
+# NOTICE
+
+本仓库是 anima-oneclick skill 的指令、配置与脚本集合，**不含任何模型权重**。
+
+安装时下载的 6 个文件由 `manifest.json` 列出，各自遵循其原始发布页面的许可：
+
+- `JANIMA_v10 (1).safetensors` — Hugging Face / ModelScope
+- `qwen_3_06b_base.safetensors` — Hugging Face / ModelScope
+- `qwen_image_vae.safetensors` — Hugging Face / ModelScope
+- `anima-highres-aesthetic-boost.safetensors` — Hugging Face / ModelScope
+- `AnimaNEWNSS8.safetensors`（Niji Sweet Spot v5.0）— Civitai
+- `anima-turbo-lora-v0.2.safetensors` — Hugging Face / ModelScope
+
+ComfyUI Portable 遵循其上游项目的许可。使用与再分发前请自行核对各来源页面的条款；本仓库不对任何第三方权重或运行时作授权。

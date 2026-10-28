@@ -1,0 +1,60 @@
+{
+  "schema": 1,
+  "display": {
+    "root_suffix": "\\AnimaAssets",
+    "min_free_gb": 30,
+    "volume_text": "约 8–10GB",
+    "recipe": {
+      "quality": {
+        "label": "A. 使用作者推荐的模型链，效果较好，出图快。",
+        "hint": "（以 RTX 4060 为例，8–20s 一张）"
+      },
+      "base": {
+        "label": "B. 只安装基础模型，能满足基本生图需求，可拓展性强",
+        "hint": "（以 RTX 4060 为例，30–60s 一张）"
+      }
+    },
+    "entry": {
+      "agent": {
+        "label": "A. 全由 Agent 托管，只需与 Agent 对话即可生图",
+        "hint": "（token 花费量略高，适合懒人）"
+      },
+      "console": {
+        "label": "B. 由 Agent 生提示词，您使用可视化“简易操作台”生图",
+        "hint": "（适合小白）"
+      },
+      "webui": {
+        "label": "C. 由 Agent 生提示词，您使用 ComfyUI WebUI 生图",
+        "hint": "（适合想入门 ComfyUI 的人，容易进阶）"
+      }
+    },
+    "size_tiers": {
+      "1536": [[960, 1536], [1536, 960], [1024, 1024], [768, 768]],
+      "960": [[720, 960], [960, 720], [960, 960], [640, 640]],
+      "768": [[576, 768], [768, 576], [768, 768], [512, 512]]
+    },
+    "tier_labels": ["竖图", "横图", "方图", "试稿"]
+  },
+  "internal": {
+    "workflows": {
+      "quality": "workflows/anima-quality.json",
+      "base": "workflows/anima-base.json"
+    },
+    "node_count": 12,
+    "custom_nodes": 0,
+    "clip_loader_type": "stable_diffusion",
+    "loras": [
+      { "chain": 1, "name": "anima-highres-aesthetic-boost.safetensors", "strength": 0.7, "role": "高分辨率 / 审美增强" },
+      { "chain": 2, "name": "AnimaNEWNSS8.safetensors", "strength": 0.7, "role": "风格" },
+      { "chain": 3, "name": "anima-turbo-lora-v0.2.safetensors", "strength": 0.85, "role": "加速" }
+    ],
+    "sampling": {
+      "quality": { "steps": 8, "cfg": 1.0, "sampler": "er_sde", "scheduler": "sgm_uniform" },
+      "base": { "steps": 30, "cfg": 4.0, "sampler": "er_sde", "scheduler": "sgm_uniform", "pending_measurement": true }
+    },
+    "first_image_side": 768,
+    "baseline_side": [960, 1536],
+    "negative": "mosaic, censored, worst quality, low quality, score_1, score_2, score_3, characters, bad hands, extra fingers, six fingers, fused fingers, missing fingers, deformed hands, mutated hands, bad anatomy",
+    "filename_pattern": "Anima_{artist|plain}_{seed8}_{timestamp}.png"
+  }
+}

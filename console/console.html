@@ -1,0 +1,1012 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Anima · 简易操作台</title>
+<style>
+  :root{
+    --paper:#F1F0EB;
+    --paper-2:#FFFFFF;
+    --ink:#0A0A0A;
+    --muted:#767670;
+    --line:#0A0A0A;
+    --blue:#002FA7;
+    --yellow:#E4FF1A;
+    --orange:#FF4D00;
+    --green:#0E7A3C;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:var(--paper);color:var(--ink);
+    font-family:"Helvetica Neue",Helvetica,Arial,"PingFang SC","Microsoft YaHei",sans-serif;
+    font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased;
+  }
+  ::selection{background:var(--blue);color:#fff}
+  button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+  input,textarea,select{font:inherit;color:inherit}
+  .mono{font-family:ui-monospace,"SFMono-Regular",Menlo,Consolas,"Liberation Mono",monospace}
+  .micro{font-size:10px;letter-spacing:.15em;text-transform:uppercase}
+
+  /* top */
+  .top{
+    background:var(--ink);color:#fff;height:54px;padding:0 20px;
+    display:flex;align-items:center;gap:18px;position:sticky;top:0;z-index:50;
+  }
+  .top .brand{display:flex;align-items:baseline;gap:10px;white-space:nowrap}
+  .top .brand b{font-size:14px;letter-spacing:.2em;font-weight:600}
+  .top .brand span{font-size:10px;letter-spacing:.14em;color:#A9A9A4}
+  .top .engine{
+    display:flex;align-items:center;gap:8px;font-size:11px;letter-spacing:.08em;
+    color:#CFCFC9;margin-left:auto;white-space:nowrap;
+  }
+  .status-dot{width:8px;height:8px;background:#7A7A74;display:inline-block;transition:.2s}
+  .status-dot.on{background:var(--yellow)}
+  .status-dot.err{background:var(--orange)}
+  .tbtn{
+    border:1px solid #4A4A45;color:#D6D6D0;padding:6px 10px;font-size:10px;
+    letter-spacing:.12em;text-transform:uppercase;transition:.15s;
+  }
+  .tbtn:hover{background:var(--yellow);border-color:var(--yellow);color:var(--ink)}
+
+  /* masthead */
+  .masthead{
+    display:flex;justify-content:space-between;align-items:flex-end;gap:24px;
+    padding:30px 20px 18px;border-bottom:1px solid var(--line);flex-wrap:wrap;
+  }
+  .masthead h1{margin:0;font-size:clamp(30px,3.6vw,46px);line-height:1.04;letter-spacing:-.035em;font-weight:500}
+  .masthead h1 em{font-style:normal;color:var(--blue)}
+  .masthead .meta{text-align:right;font-size:11px;color:var(--muted);line-height:1.8;letter-spacing:.02em}
+  .masthead .meta b{color:var(--ink);letter-spacing:.1em}
+
+  /* tabs */
+  .tabs{display:flex;align-items:stretch;border-bottom:1px solid var(--line);background:var(--paper);position:sticky;top:54px;z-index:40}
+  .tab{
+    flex:1;text-align:left;padding:14px 20px;border-right:1px solid rgba(10,10,10,.18);
+    display:flex;align-items:baseline;gap:10px;color:var(--muted);transition:.15s;
+  }
+  .tab:last-child{border-right:0}
+  .tab i{font-style:normal;font-size:10px;letter-spacing:.12em}
+  .tab b{font-weight:500;font-size:13px;letter-spacing:.02em}
+  .tab:hover{color:var(--ink)}
+  .tab.on{background:var(--blue);color:#fff}
+  .tab.on i{color:var(--yellow)}
+
+  .panel{display:none;padding:0 20px 60px}
+  .panel.on{display:block}
+
+  /* generic split */
+  .split{display:grid;grid-template-columns:minmax(340px,440px) 1fr;gap:0;align-items:stretch}
+  .col-l{padding:26px 26px 26px 0;border-right:1px solid var(--line);min-width:0}
+  .col-r{padding:26px 0 26px 26px;min-width:0}
+
+  .field{border-top:1px solid rgba(10,10,10,.18);padding:16px 0}
+  .field:first-child{border-top:0;padding-top:0}
+  .field > .lbl{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px}
+  .lbl .k{font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--muted)}
+  .lbl .h{font-size:11px;color:var(--muted)}
+
+  textarea{
+    width:100%;min-height:150px;background:var(--paper-2);border:1px solid var(--line);
+    padding:13px 14px;resize:vertical;font-size:14px;line-height:1.6;letter-spacing:-.005em;
+  }
+  textarea:focus{outline:2px solid var(--blue);outline-offset:-1px}
+
+  .seg{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid var(--line);background:var(--paper-2)}
+  .seg button{padding:11px 6px;border-right:1px solid rgba(10,10,10,.18);font-size:11.5px;transition:.15s;line-height:1.3}
+  .seg button:last-child{border-right:0}
+  .seg button small{display:block;font-size:9px;color:var(--muted);letter-spacing:.06em;margin-top:3px}
+  .seg button:hover{background:#F4F3EC}
+  .seg button.on{background:var(--blue);color:#fff}
+  .seg button.on small{color:#C6CFEA}
+
+  .seedrow{display:grid;grid-template-columns:1fr auto;gap:8px}
+  .seedrow input{
+    background:var(--paper-2);border:1px solid var(--line);padding:11px 13px;
+    font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13px;width:100%;
+  }
+  .seedrow button{border:1px solid var(--line);padding:0 14px;font-size:10px;letter-spacing:.12em;text-transform:uppercase}
+  .seedrow button:hover{background:var(--ink);color:#fff}
+
+  /* save row */
+  .saverow{display:grid;grid-template-columns:1fr auto auto;gap:8px}
+  .saverow input{
+    background:var(--paper-2);border:1px solid var(--line);padding:10px 12px;font-size:12.5px;
+    width:100%;min-width:0;text-overflow:ellipsis;color:var(--ink);
+  }
+  .saverow input::placeholder{color:#9A9A94}
+  .saverow button{
+    border:1px solid var(--line);padding:0 13px;font-size:10px;letter-spacing:.1em;
+    text-transform:uppercase;white-space:nowrap;transition:.15s;
+  }
+  .saverow button:hover{background:var(--ink);color:#fff}
+  .saverow .clr{color:var(--muted);border-color:rgba(10,10,10,.28)}
+  .saverow .clr:hover{background:var(--ink);color:#fff}
+  .savehint{margin:7px 0 0;font-size:11px;color:var(--muted);line-height:1.7}
+
+  .cta{
+    width:100%;background:var(--blue);color:#fff;padding:17px;margin-top:18px;
+    font-size:13px;letter-spacing:.14em;text-transform:uppercase;border:1px solid var(--blue);
+    display:flex;align-items:center;justify-content:space-between;gap:12px;transition:.15s;
+  }
+  .cta:hover{background:var(--ink);border-color:var(--ink)}
+  .cta[disabled]{background:#B9B9B1;border-color:#B9B9B1;cursor:not-allowed}
+  .cta span:last-child{font-size:11px;letter-spacing:.1em;color:#C9D2EE}
+  .cta:focus-visible{outline:2px solid var(--orange);outline-offset:2px}
+
+  /* error panel */
+  .err{border:1px solid var(--orange);background:#FFF7F4;padding:14px 16px;margin-top:14px;display:none}
+  .err.show{display:block}
+  .err .eh{font-size:14px}
+  .err .eh b{font-weight:600}
+  .err .es{margin:4px 0 0;font-size:12.5px;color:#54443C}
+  .err .ea{display:flex;gap:8px;flex-wrap:wrap;margin-top:11px}
+  .err .ea button{border:1px solid rgba(10,10,10,.32);background:#fff;padding:7px 12px;font-size:10px;letter-spacing:.1em;text-transform:uppercase;transition:.15s}
+  .err .ea button:hover{background:var(--ink);color:#fff}
+  .err .ea .primary{border-color:var(--orange);background:var(--orange);color:#fff}
+  .err .ea .primary:hover{background:var(--ink);border-color:var(--ink)}
+
+  /* preview stage */
+  .stage-wrap{display:flex;flex-direction:column;height:100%;min-height:460px}
+  .stage-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px;gap:12px}
+  .stage-head .k{font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--muted)}
+  .stage-head .n{font-size:11px;color:var(--muted);letter-spacing:.06em;text-align:right}
+  .stage{
+    flex:1;background:#0A0A0A;position:relative;overflow:hidden;
+    display:grid;place-items:center;min-height:360px;
+    background-image:linear-gradient(rgba(255,255,255,.07) 1px,transparent 1px),
+                     linear-gradient(90deg,rgba(255,255,255,.07) 1px,transparent 1px);
+    background-size:40px 40px;
+  }
+  .stage img{width:100%;height:100%;object-fit:contain;display:none}
+  .stage.has img{display:block}
+  .stage .ph{
+    color:#6E6E68;text-align:center;font-size:11px;letter-spacing:.16em;text-transform:uppercase;line-height:2;
+  }
+  .stage .ph b{display:block;color:#9A9A94;font-size:12px;letter-spacing:.2em;margin-bottom:6px}
+  .stage .corner{position:absolute;width:14px;height:14px;border-color:var(--yellow);border-style:solid;border-width:0}
+  .stage .c1{top:10px;left:10px;border-top-width:1px;border-left-width:1px}
+  .stage .c2{top:10px;right:10px;border-top-width:1px;border-right-width:1px}
+  .stage .c3{bottom:10px;left:10px;border-bottom-width:1px;border-left-width:1px}
+  .stage .c4{bottom:10px;right:10px;border-bottom-width:1px;border-right-width:1px}
+  .stage .busy{
+    position:absolute;inset:0;display:none;place-items:center;background:rgba(10,10,10,.72);color:#fff;
+  }
+  .stage.busy .busy{display:grid}
+  .busy .in{text-align:center}
+  .busy .line{width:220px;height:2px;background:#3A3A35;margin:14px auto 0;overflow:hidden;position:relative}
+  .busy .line i{position:absolute;top:0;bottom:0;width:40%;background:var(--yellow);left:-40%;animation:slide 1.1s infinite linear}
+  @keyframes slide{to{left:100%}}
+  .busy .t{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:#CFCFC9}
+
+  .meta-strip{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid rgba(10,10,10,.22);border-top:0;background:var(--paper-2)}
+  .meta-strip div{padding:9px 11px;border-right:1px solid rgba(10,10,10,.14);min-width:0}
+  .meta-strip div:last-child{border-right:0}
+  .meta-strip .k{font-size:9px;letter-spacing:.14em;color:var(--muted);text-transform:uppercase}
+  .meta-strip .v{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11.5px;margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+  .saveone{
+    display:none;margin-top:12px;border:1px solid var(--line);background:var(--paper-2);
+    padding:11px 14px;width:100%;font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;
+    justify-content:space-between;align-items:center;transition:.15s;
+  }
+  .saveone.show{display:flex}
+  .saveone:hover{background:var(--ink);color:#fff}
+  .panel.autosave .saveone{display:none!important}
+
+  /* artist picker */
+  .atools{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:8px}
+  .atools .n{font-size:11px;color:var(--muted);letter-spacing:.06em}
+  .atools .bs{display:flex;gap:6px}
+  .atools .bs button{border:1px solid rgba(10,10,10,.3);padding:5px 9px;font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;transition:.15s}
+  .atools .bs button:hover{background:var(--ink);color:#fff}
+  .alist{display:flex;flex-direction:column;border:1px solid rgba(10,10,10,.2);background:var(--paper-2);max-height:322px;overflow:auto}
+  .alist label{display:flex;align-items:center;gap:10px;padding:9px 12px;border-bottom:1px solid rgba(10,10,10,.09);cursor:pointer;font-size:12.5px;transition:.12s}
+  .alist label:last-child{border-bottom:0}
+  .alist label:hover{background:#F4F3EC}
+  .alist label.on{background:#EDF0FA}
+  .alist input{
+    appearance:none;-webkit-appearance:none;margin:0;flex:0 0 auto;
+    width:14px;height:14px;border:1px solid var(--ink);background:#fff;display:grid;place-items:center;
+  }
+  .alist input:checked{background:var(--blue);border-color:var(--blue)}
+  .alist input:checked::after{content:"";width:6px;height:6px;background:var(--yellow)}
+  .alist input:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+  .alist .an{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+  /* artist output grid */
+  .agrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px;--ar:2/3}
+  .frame{border:1px solid var(--line);background:var(--paper-2);display:flex;flex-direction:column;min-width:0}
+  .frame .fh{display:flex;justify-content:space-between;align-items:baseline;gap:8px;padding:7px 10px;border-bottom:1px solid rgba(10,10,10,.18);font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+  .frame .fh b{color:var(--ink);font-weight:500;font-size:11px;letter-spacing:.01em;text-transform:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .frame .fb{aspect-ratio:var(--ar);background:#0A0A0A;display:grid;place-items:center;position:relative;overflow:hidden}
+  .frame .fb img{width:100%;height:100%;object-fit:contain;position:absolute;inset:0;display:none}
+  .frame .fb.has img{display:block}
+  .frame .fb .ph{color:#6E6E68;font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;text-align:center;line-height:1.9;padding:0 12px}
+  .frame .fb.busy .ph{color:var(--yellow)}
+  .frame .fb.busy .ph i{display:block;font-style:normal;letter-spacing:.24em;margin-bottom:5px}
+  .frame .fa{border-top:1px solid rgba(10,10,10,.16)}
+  .frame .fa button{width:100%;padding:8px;font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;transition:.15s}
+  .frame .fa button:hover{background:var(--blue);color:#fff}
+  .frame .fa{display:none}
+  .frame .fb.has + .fa{display:block}
+  .panel.autosave .frame .fa{display:none!important}
+
+  .ag-empty{border:1px dashed rgba(10,10,10,.3);padding:44px 20px;text-align:center;color:var(--muted);font-size:12px;line-height:1.9}
+  .ag-empty b{display:block;color:var(--ink);font-size:12px;letter-spacing:.16em;text-transform:uppercase;margin-bottom:6px}
+
+  /* toast */
+  .toast{
+    position:fixed;left:50%;bottom:26px;transform:translate(-50%,20px);
+    background:var(--ink);color:#fff;padding:11px 18px;font-size:12px;letter-spacing:.04em;
+    opacity:0;pointer-events:none;transition:.2s;z-index:80;max-width:min(90vw,640px);
+  }
+  .toast.show{opacity:1;transform:translate(-50%,0)}
+
+  .footbar{
+    background:var(--paper);border-top:1px solid var(--line);
+    padding:9px 20px;display:flex;justify-content:space-between;gap:14px;font-size:10px;
+    color:var(--muted);letter-spacing:.06em;flex-wrap:wrap;
+  }
+  .footbar b{color:var(--ink);font-weight:500}
+
+  @media (max-width:1040px){
+    .split{grid-template-columns:1fr}
+    .col-l{border-right:0;padding:22px 0}
+    .col-r{padding:10px 0 22px;border-top:1px solid var(--line)}
+    .masthead{flex-direction:column;align-items:flex-start;gap:10px}
+    .masthead .meta{text-align:left}
+    .tabs{position:static}
+    .top{flex-wrap:wrap;height:auto;padding:10px 16px;gap:10px}
+    .engine{margin-left:0}
+    .meta-strip{grid-template-columns:repeat(2,1fr)}
+  }
+  @media (max-width:560px){
+    .agrid{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="brand"><b>ANIMA</b><span>CONSOLE</span></div>
+  <div class="engine">
+    <span class="status-dot" id="dot"></span>
+    <span id="engineText">正在准备</span>
+    <button class="tbtn" id="check">重新连接</button>
+  </div>
+</header>
+
+<div class="masthead">
+  <h1>简易<em>操作台</em></h1>
+  <div class="meta">
+    <b>两步完成</b><br>
+    写提示词 → 出图 → 存下来。<br>
+    配方固定，坏不了。
+  </div>
+</div>
+
+<div class="tabs" role="tablist">
+  <button class="tab on" role="tab" aria-selected="true" data-tab="t2i"><i>01</i><b>文生图</b></button>
+  <button class="tab" role="tab" aria-selected="false" data-tab="artist"><i>02</i><b>画师串批量</b></button>
+</div>
+
+<!-- ============ 01 文生图 ============ -->
+<section class="panel on" id="p-t2i" role="tabpanel">
+  <div class="split">
+    <div class="col-l">
+      <div class="field">
+        <div class="lbl"><span class="k">提示词 / PROMPT</span><span class="h">Agent 会自动插入画师串</span></div>
+        <textarea id="prompt" placeholder="描述画面：人物、动作、场景、光线、构图……">1girl, solo, long grey hair, cream knit sweater dress, crouching, reaching toward leaf, forest trail, fallen log, filtered afternoon sunlight, anime illustration, full body, off-center composition</textarea>
+        <div class="lbl" style="margin-top:8px"><span class="h mono" id="pcount">0 字符</span><span class="h">负面词已固定</span></div>
+      </div>
+
+      <div class="field">
+        <div class="lbl"><span class="k">尺寸 / SIZE</span><span class="h" id="sizeHint">竖图 · 960×1536</span></div>
+        <div class="seg" id="seg1"></div>
+      </div>
+
+      <div class="field">
+        <div class="lbl"><span class="k">种子 / SEED</span><span class="h">固定后可对比改动</span></div>
+        <div class="seedrow">
+          <input id="seed" value="475976676477698" spellcheck="false">
+          <button type="button" id="reroll">随机</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <div class="lbl"><span class="k">成图保存位置 / SAVE TO</span><span class="h">可选</span></div>
+        <div class="saverow">
+          <input id="path1" readonly placeholder="未指定位置">
+          <button type="button" id="pick1">选择</button>
+          <button type="button" class="clr" id="clear1">清除</button>
+        </div>
+        <p class="savehint" id="hint1">指定后，每张图会自动存到该文件夹；未指定时，出图后可单张保存。</p>
+      </div>
+
+      <button class="cta" id="gen"><span>生成一张</span><span id="genHint">≈ 30–60s</span></button>
+
+      <div class="err" id="err1">
+        <div class="eh"><b>没出成。</b></div>
+        <p class="es">请让您的 Agent 检查此问题。</p>
+        <div class="ea">
+          <button type="button" class="primary" data-copy="1">复制报错信息</button>
+          <button type="button" id="retry1">再试一次</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-r">
+      <div class="stage-wrap">
+        <div class="stage-head">
+          <span class="k">输出 / OUTPUT</span>
+          <span class="n" id="stageNote">还没有图</span>
+        </div>
+        <div class="stage" id="stage">
+          <span class="corner c1"></span><span class="corner c2"></span>
+          <span class="corner c3"></span><span class="corner c4"></span>
+          <div class="ph"><b>EMPTY FRAME</b>写好提示词，点「生成一张」</div>
+          <img id="out" alt="生成结果">
+          <div class="busy"><div class="in"><div class="t" id="busyT">排队中</div><div class="line"><i></i></div></div></div>
+        </div>
+        <button class="saveone" id="saveOne"><span>保存这张</span><span>PNG</span></button>
+        <div class="meta-strip">
+          <div><div class="k">Seed</div><div class="v" id="mSeed">—</div></div>
+          <div><div class="k">Size</div><div class="v" id="mSize">—</div></div>
+          <div><div class="k">Time</div><div class="v" id="mTime">—</div></div>
+          <div><div class="k">保存</div><div class="v" id="mSave">—</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 02 画师串批量 ============ -->
+<section class="panel" id="p-artist" role="tabpanel">
+  <div class="split">
+    <div class="col-l">
+      <div class="field">
+        <div class="lbl"><span class="k">提示词 / PROMPT</span><span class="h">画师串自动插进正文</span></div>
+        <textarea id="aprompt" placeholder="描述画面：人物、动作、场景、光线、构图……">1girl, solo, long grey hair, cream knit sweater dress, crouching, reaching toward leaf, forest trail, fallen log, filtered afternoon sunlight, anime illustration, full body, off-center composition</textarea>
+        <div class="lbl" style="margin-top:8px"><span class="h mono" id="apcount">0 字符</span><span class="h">负面词已固定</span></div>
+      </div>
+
+      <div class="field">
+        <div class="lbl"><span class="k">尺寸 / SIZE</span><span class="h" id="asizeHint">竖图 · 960×1536</span></div>
+        <div class="seg" id="seg2"></div>
+      </div>
+
+      <div class="field">
+        <div class="lbl"><span class="k">画师串 / ARTISTS</span><span class="h">多选 · 一次批量出图</span></div>
+        <div class="atools">
+          <span class="n" id="acount">已选 0 个</span>
+          <span class="bs">
+            <button type="button" id="allA">全选</button>
+            <button type="button" id="noneA">清空</button>
+          </span>
+        </div>
+        <div class="alist" id="alist"></div>
+      </div>
+
+      <div class="field">
+        <div class="lbl"><span class="k">种子 / SEED</span><span class="h">同一张脸，只换画风</span></div>
+        <div class="seedrow">
+          <input id="aseed" value="475976676477698" spellcheck="false">
+          <button type="button" id="aroll">随机</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <div class="lbl"><span class="k">成图保存位置 / SAVE TO</span><span class="h">可选</span></div>
+        <div class="saverow">
+          <input id="path2" readonly placeholder="未指定位置">
+          <button type="button" id="pick2">选择</button>
+          <button type="button" class="clr" id="clear2">清除</button>
+        </div>
+        <p class="savehint" id="hint2">指定后，这批图会自动存到该文件夹；未指定时，每张图下方可单独保存。</p>
+      </div>
+
+      <button class="cta" id="cmp" disabled><span>批量生成</span><span id="cmpN">0 张</span></button>
+
+      <div class="err" id="err2">
+        <div class="eh"><b>没出成。</b></div>
+        <p class="es">请让您的 Agent 检查此问题。</p>
+        <div class="ea">
+          <button type="button" class="primary" data-copy="1">复制报错信息</button>
+          <button type="button" id="retry2">再试一次</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-r">
+      <div class="stage-head">
+        <span class="k">批量输出 / BATCH</span>
+        <span class="n" id="cmpNote">勾选画师串，开始批量</span>
+      </div>
+      <div class="agrid" id="agrid">
+        <div class="ag-empty" id="agEmpty"><b>NO SELECTION</b>勾选左侧画师串，这里会按顺序出面板。</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="toast" id="toast"></div>
+<div class="footbar">
+  <span><b>Anima</b> 简易操作台</span>
+  <span>本地运行 · 不联网 · 单文件</span>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ---------------- constants ---------------- */
+  const $  = (s,r=document)=>r.querySelector(s);
+  const $$ = (s,r=document)=>[...r.querySelectorAll(s)];
+
+  const API = location.protocol === "file:" ? "http://127.0.0.1:8188" : "";
+
+  /* 安装向导产出的 plan：只读枚举，决定用哪套配方与尺寸上限 */
+  const PLAN = (function(){
+    const q = new URLSearchParams(location.search);
+    const recipe = q.get("recipe") === "base" ? "base" : "quality";
+    const raw = Number(q.get("max")) || 1536;
+    const max = raw >= 1536 ? 1536 : raw >= 960 ? 960 : 768;
+    return { recipe, max };
+  })();
+
+  const SIZES = PLAN.max >= 1536
+    ? [[960,1536,"竖图"],[1536,960,"横图"],[1024,1024,"方图"],[768,768,"试稿"]]
+    : PLAN.max >= 960
+      ? [[720,960,"竖图"],[960,720,"横图"],[960,960,"方图"],[640,640,"试稿"]]
+      : [[576,768,"竖图"],[768,576,"横图"],[768,768,"方图"],[512,512,"试稿"]];
+
+  $("#genHint").textContent = PLAN.recipe === "base" ? "稍慢，请等一会儿" : "≈ 8–20s";
+
+  const NEG = "mosaic, censored, worst quality, low quality, score_1, score_2, score_3, characters, bad hands, extra fingers, six fingers, fused fingers, missing fingers, deformed hands, mutated hands, bad anatomy";
+
+  const ARTISTS = [
+    "tomose_shunsaku","nipi27","kantoku","wlop","shirow_masamune","nihei_tsutomu","tony_taka",
+    "ito_noizi","shimada_fumikane","takeuchi_takashi","minaba_hideo","tsunako","mishima_kurone",
+    "suzuhira_hiro","fujima_takuya","ilya_kuvshinov","bkub","yamamoto_souichirou","nekotoufu",
+    "shiromanta","sayori_(neko_works)","carnelian","asanagi","avogado6","zounose","ishikei",
+    "houtengeki","ixy","as109","mery_(yangmalgage)","abubu","mikimoto_haruhiko","murase48",
+    "yoneyama_mai"
+  ].map(n=>"@" + n);
+
+  const TEMPLATE = {
+    "69": { class_type:"UNETLoader", inputs:{ unet_name:"JANIMA_v10 (1).safetensors", weight_dtype:"default" } },
+    "2":  { class_type:"CLIPLoader", inputs:{ clip_name:"qwen_3_06b_base.safetensors", type:"stable_diffusion", device:"default" } },
+    "3":  { class_type:"VAELoader",  inputs:{ vae_name:"qwen_image_vae.safetensors" } },
+    "72": { class_type:"LoraLoaderModelOnly", inputs:{ model:["69",0], lora_name:"anima-highres-aesthetic-boost.safetensors", strength_model:0.7 } },
+    "76": { class_type:"LoraLoaderModelOnly", inputs:{ model:["72",0], lora_name:"AnimaNEWNSS8.safetensors", strength_model:0.7 } },
+    "77": { class_type:"LoraLoaderModelOnly", inputs:{ model:["76",0], lora_name:"anima-turbo-lora-v0.2.safetensors", strength_model:0.85 } },
+    "5":  { class_type:"CLIPTextEncode", inputs:{ clip:["2",0], text:"" } },
+    "7":  { class_type:"CLIPTextEncode", inputs:{ clip:["2",0], text:NEG } },
+    "8":  { class_type:"EmptyLatentImage", inputs:{ width:960, height:1536, batch_size:1 } },
+    "4":  { class_type:"KSampler", inputs:{ model:["77",0], positive:["5",0], negative:["7",0], latent_image:["8",0],
+             seed:475976676477698, steps:8, cfg:1, sampler_name:"er_sde", scheduler:"sgm_uniform", denoise:1 } },
+    "9":  { class_type:"VAEDecode", inputs:{ samples:["4",0], vae:["3",0] } },
+    "74": { class_type:"SaveImage", inputs:{ images:["9",0], filename_prefix:"Anima" } }
+  };
+
+  let size = { w:SIZES[0][0], h:SIZES[0][1] };
+  let online = false;
+  let busy = false;
+  let dir1 = null, dir2 = null;
+  let selected = new Set();
+  let done = new Map();
+  let lastImageUrl = "";
+  let LAST_DETAIL = "";
+  const canPick = typeof window.showDirectoryPicker === "function";
+
+  /* ---------------- small helpers ---------------- */
+  function toast(msg){
+    const t = $("#toast");
+    t.textContent = msg;
+    t.classList.add("show");
+    clearTimeout(t._t);
+    t._t = setTimeout(()=>t.classList.remove("show"), 2600);
+  }
+  function nowSeed(){ return String(Math.floor(Math.random()*1e15)); }
+  function fmtSize(){ return size.w + "×" + size.h; }
+  function sizeWord(){ return size.h > size.w ? "竖图" : size.w === size.h ? "方图" : "横图"; }
+  function safeTag(name){
+    return String(name).replace(/^@/,"").replace(/[^a-zA-Z0-9_\-]/g,"") || "artist";
+  }
+  function pad(n){ return String(n).padStart(2,"0"); }
+  function stamp(){
+    const d = new Date();
+    return d.getFullYear() + pad(d.getMonth()+1) + pad(d.getDate()) + "_" + pad(d.getHours()) + pad(d.getMinutes()) + pad(d.getSeconds());
+  }
+  function fileName(seed, artist){
+    return "Anima_" + safeTag(artist || "plain") + "_" + String(seed).slice(-8) + "_" + stamp() + ".png";
+  }
+
+  /* ---------------- error surface ---------------- */
+  function recordErr(e, scope){
+    LAST_DETAIL = [
+      "时间：" + new Date().toLocaleString("zh-CN",{hour12:false}),
+      "环节：" + scope,
+      "服务：" + (API || location.origin || "本地"),
+      "信息：" + (e && e.message ? e.message : String(e)),
+      e && e.stack ? "堆栈：\n" + e.stack : ""
+    ].filter(Boolean).join("\n");
+  }
+  function showErr(sel, scope, e){
+    recordErr(e, scope);
+    $(sel).classList.add("show");
+  }
+  function hideErr(sel){ $(sel).classList.remove("show"); }
+  async function copyDetail(btn){
+    const text = LAST_DETAIL || ("时间：" + new Date().toLocaleString("zh-CN",{hour12:false}) + "\n信息：没有更多细节。");
+    try{
+      await navigator.clipboard.writeText(text);
+      const old = btn.textContent;
+      btn.textContent = "已复制";
+      setTimeout(()=>{ btn.textContent = old; }, 1400);
+    }catch(err){
+      const ta = document.createElement("textarea");
+      ta.value = text; document.body.appendChild(ta); ta.select();
+      try{ document.execCommand("copy"); btn.textContent = "已复制"; }catch(e2){ btn.textContent = "复制失败"; }
+      document.body.removeChild(ta);
+      setTimeout(()=>{ btn.textContent = "复制报错信息"; }, 1400);
+    }
+  }
+  $$("[data-copy]").forEach(b=>b.addEventListener("click", ()=>copyDetail(b)));
+
+  /* ---------------- engine ---------------- */
+  async function probe(){
+    const dot = $("#dot");
+    dot.className = "status-dot";
+    $("#engineText").textContent = "正在准备";
+    const ctrl = new AbortController();
+    const t = setTimeout(()=>ctrl.abort(), 4000);
+    try{
+      const r = await fetch(API + "/system_stats", { signal:ctrl.signal, cache:"no-store" });
+      clearTimeout(t);
+      if(!r.ok) throw new Error("HTTP " + r.status);
+      await r.json();
+      online = true;
+      dot.classList.add("on");
+      $("#engineText").textContent = "已就绪";
+      return true;
+    }catch(e){
+      clearTimeout(t);
+      online = false;
+      dot.classList.add("err");
+      $("#engineText").textContent = "未就绪";
+      return false;
+    }
+  }
+  $("#check").addEventListener("click", async ()=>{
+    const ok = await probe();
+    toast(ok ? "已就绪，可以出图" : "还没就绪，请让您的 Agent 检查");
+  });
+
+  /* ---------------- workflow ---------------- */
+  function buildWorkflow({ prompt, seed, w, h }){
+    const out = structuredClone(TEMPLATE);
+
+    if(PLAN.recipe === "base"){
+      delete out["72"]; delete out["76"]; delete out["77"];
+      out["4"].inputs.model = ["69",0];
+      out["4"].inputs.steps = 30;
+      out["4"].inputs.cfg = 4;
+    }
+
+    out["4"].inputs.seed = Number(seed);
+    out["8"].inputs.width = w;
+    out["8"].inputs.height = h;
+    out["8"].inputs.batch_size = 1;
+    out["5"].inputs.text = prompt;
+    out["7"].inputs.text = NEG;
+    return out;
+  }
+
+  async function submit(wfObj){
+    const r = await fetch(API + "/prompt", {
+      method:"POST",
+      headers:{ "Content-Type":"application/json" },
+      body: JSON.stringify({ prompt: wfObj, client_id:"anima-console" })
+    });
+    if(!r.ok){
+      let t = "";
+      try{ t = await r.text(); }catch(e){}
+      throw new Error("提交失败 HTTP " + r.status + (t ? " · " + t.slice(0,300) : ""));
+    }
+    const j = await r.json();
+    if(!j.prompt_id) throw new Error("返回缺少 prompt_id");
+    return j.prompt_id;
+  }
+
+  async function poll(id, onTick){
+    const t0 = performance.now();
+    for(let i=0;i<260;i++){
+      await new Promise(r=>setTimeout(r, 900));
+      const r = await fetch(API + "/history/" + encodeURIComponent(id), { cache:"no-store" });
+      if(!r.ok) continue;
+      const j = await r.json();
+      const h = j[id];
+      if(!h){ if(onTick) onTick(i); continue; }
+      const imgs = [];
+      Object.values(h.outputs || {}).forEach(o=>{
+        (o.images || []).forEach(im=>imgs.push(im));
+      });
+      if(imgs.length) return { img: imgs[0], ms: Math.round(performance.now()-t0) };
+      if(h.status && h.status.status_str === "error") throw new Error("引擎执行失败");
+    }
+    throw new Error("等待超时（约 4 分钟）");
+  }
+
+  function viewURL(im){
+    return API + "/view?filename=" + encodeURIComponent(im.filename) +
+      "&subfolder=" + encodeURIComponent(im.subfolder || "") +
+      "&type=" + encodeURIComponent(im.type || "output");
+  }
+
+  /* ---------------- artist injection ---------------- */
+  function insertArtist(text, name){
+    const anchors = ["1girl","1boy","2girls","2boys"];
+    const parts = text.split(",");
+    let idx = -1;
+    for(let i=0;i<parts.length;i++){
+      const t = parts[i].trim().replace(/^\(+|\)+$/g,"").toLowerCase();
+      if(anchors.includes(t)){ idx = i; break; }
+    }
+    if(idx >= 0){
+      parts.splice(idx, 0, " " + name);
+      return parts.join(",").replace(/\s{2,}/g," ").trim();
+    }
+    const low = text.toLowerCase();
+    const p = low.indexOf("intricate details");
+    if(p >= 0) return text.slice(0,p) + name + ", " + text.slice(p);
+    return name + ", " + text;
+  }
+
+  /* ---------------- save ---------------- */
+  async function saveTo(dir, url, filename){
+    const r = await fetch(url, { cache:"no-store" });
+    if(!r.ok) throw new Error("取图失败 HTTP " + r.status);
+    const blob = await r.blob();
+    if(dir){
+      const fh = await dir.getFileHandle(filename, { create:true });
+      const w = await fh.createWritable();
+      await w.write(blob);
+      await w.close();
+      return "saved";
+    }
+    download(blob, filename);
+    return "downloaded";
+  }
+  function download(blob, filename){
+    const u = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = u; a.download = filename;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(()=>URL.revokeObjectURL(u), 5000);
+  }
+  async function pickDir(which){
+    if(!canPick) return;
+    try{
+      const d = await window.showDirectoryPicker({ mode:"readwrite", id:"anima-output" });
+      if(which === 1){
+        dir1 = d;
+        $("#path1").value = d.name;
+        $("#hint1").textContent = "新出的图会自动存到「" + d.name + "」里。";
+        $("#p-t2i").classList.add("autosave");
+      }else{
+        dir2 = d;
+        $("#path2").value = d.name;
+        $("#hint2").textContent = "这批新图会自动存到「" + d.name + "」里。";
+        $("#p-artist").classList.add("autosave");
+      }
+    }catch(e){
+      if(e && e.name === "AbortError") return;
+      showErr(which === 1 ? "#err1" : "#err2", "选择保存位置", e);
+    }
+  }
+  function clearDir(which){
+    if(which === 1){
+      dir1 = null;
+      $("#path1").value = "";
+      $("#hint1").textContent = "指定后，每张图会自动存到该文件夹；未指定时，出图后可单张保存。";
+      $("#p-t2i").classList.remove("autosave");
+    }else{
+      dir2 = null;
+      $("#path2").value = "";
+      $("#hint2").textContent = "指定后，这批图会自动存到该文件夹；未指定时，每张图下方可单独保存。";
+      $("#p-artist").classList.remove("autosave");
+    }
+  }
+  $("#pick1").addEventListener("click", ()=>pickDir(1));
+  $("#pick2").addEventListener("click", ()=>pickDir(2));
+  $("#clear1").addEventListener("click", ()=>clearDir(1));
+  $("#clear2").addEventListener("click", ()=>clearDir(2));
+
+  if(!canPick){
+    ["#pick1","#pick2"].forEach(s=>{
+      const b = $(s);
+      b.disabled = true;
+      b.textContent = "不可用";
+      b.style.color = "#9A9A94";
+      b.style.cursor = "not-allowed";
+    });
+    $("#hint1").textContent = "当前浏览器不能直接写入文件夹。可用每张图下方的「保存这张」逐张保存。";
+    $("#hint2").textContent = "当前浏览器不能直接写入文件夹。可用每张图下方的「保存」逐张保存。";
+  }
+
+  /* ---------------- size sync ---------------- */
+  function renderSizes(){
+    const html = SIZES.map(([w,h,label])=>
+      `<button type="button" data-w="${w}" data-h="${h}">${label}<small>${w} × ${h}</small></button>`
+    ).join("");
+    ["#seg1","#seg2"].forEach(s=>{ $(s).innerHTML = html; });
+    $$(".seg button").forEach(b=>b.addEventListener("click", ()=>{
+      size = { w:Number(b.dataset.w), h:Number(b.dataset.h) };
+      syncSize();
+    }));
+  }
+  function syncSize(){
+    $$(".seg button").forEach(b=>{
+      b.classList.toggle("on", Number(b.dataset.w) === size.w && Number(b.dataset.h) === size.h);
+    });
+    $("#sizeHint").textContent = sizeWord() + " · " + fmtSize();
+    $("#asizeHint").textContent = sizeWord() + " · " + fmtSize();
+    $("#agrid").style.setProperty("--ar", size.w + "/" + size.h);
+  }
+  renderSizes();
+  syncSize();
+
+  /* ---------------- 01 t2i ---------------- */
+  const promptEl = $("#prompt");
+  function paintCount(){
+    $("#pcount").textContent = promptEl.value.length + " 字符";
+    $("#apcount").textContent = $("#aprompt").value.length + " 字符";
+  }
+  promptEl.addEventListener("input", paintCount);
+  $("#aprompt").addEventListener("input", paintCount);
+  paintCount();
+
+  $("#reroll").addEventListener("click", ()=>{ $("#seed").value = nowSeed(); });
+  $("#aroll").addEventListener("click", ()=>{ $("#aseed").value = nowSeed(); });
+
+  async function generateOne({ prompt, seed, artist }){
+    const text = artist ? insertArtist(prompt, artist) : prompt;
+    const wfObj = buildWorkflow({ prompt:text, seed, w:size.w, h:size.h });
+    const id = await submit(wfObj);
+    const res = await poll(id);
+    return { img: res.img, ms: res.ms, url: viewURL(res.img), text };
+  }
+
+  async function runSingle(){
+    if(busy) return;
+    const prompt = promptEl.value.trim();
+    if(!prompt){ toast("先写一句提示词"); promptEl.focus(); return; }
+    if(!online && !(await probe())){ showErr("#err1","生成",new Error("出图服务未就绪")); return; }
+
+    hideErr("#err1");
+    busy = true;
+    $("#gen").disabled = true;
+    $("#stage").classList.add("busy");
+    $("#busyT").textContent = "排队中";
+
+    const seed = $("#seed").value.trim() || nowSeed();
+    try{
+      const r = await generateOne({ prompt, seed });
+      $("#out").src = r.url;
+      $("#stage").classList.add("has");
+      lastImageUrl = r.url;
+      $("#stageNote").textContent = "刚出的";
+      $("#mSeed").textContent = seed;
+      $("#mSize").textContent = fmtSize();
+      $("#mTime").textContent = (r.ms/1000).toFixed(1) + "s";
+
+      const name = fileName(seed, null);
+      if(dir1){
+        $("#saveOne").classList.remove("show");
+        try{
+          await saveTo(dir1, r.url, name);
+          $("#mSave").textContent = "已保存";
+        }catch(e){
+          $("#mSave").textContent = "未保存";
+          showErr("#err1", "保存成图", e);
+        }
+      }else{
+        $("#saveOne").classList.add("show");
+        $("#mSave").textContent = "待保存";
+      }
+      toast("出好了");
+    }catch(e){
+      showErr("#err1", "生成", e);
+      $("#stageNote").textContent = "没出成";
+    }finally{
+      busy = false;
+      $("#gen").disabled = false;
+      $("#stage").classList.remove("busy");
+    }
+  }
+  $("#gen").addEventListener("click", runSingle);
+  $("#retry1").addEventListener("click", runSingle);
+
+  $("#saveOne").addEventListener("click", async ()=>{
+    if(!lastImageUrl) return;
+    const seed = $("#seed").value.trim() || "seed";
+    try{
+      await saveTo(null, lastImageUrl, fileName(seed, null));
+      toast("已保存");
+    }catch(e){
+      showErr("#err1", "保存成图", e);
+    }
+  });
+
+  /* ---------------- 02 artists ---------------- */
+  function paintArtists(){
+    $("#alist").innerHTML = ARTISTS.map(n=>`
+      <label class="${selected.has(n) ? "on" : ""}">
+        <input type="checkbox" value="${n}" ${selected.has(n) ? "checked" : ""}>
+        <span class="an">${n}</span>
+      </label>`).join("");
+    $$("#alist input").forEach(inp=>inp.addEventListener("change", ()=>{
+      if(inp.checked) selected.add(inp.value); else selected.delete(inp.value);
+      inp.closest("label").classList.toggle("on", inp.checked);
+      onSelectionChange();
+    }));
+  }
+  function onSelectionChange(){
+    const n = selected.size;
+    $("#acount").textContent = "已选 " + n + " 个";
+    $("#cmpN").textContent = n + " 张";
+    $("#cmp").disabled = n === 0 || busy;
+    $("#cmpNote").textContent = n ? ("共 " + n + " 张 · 同一种子 · " + fmtSize()) : "勾选画师串，开始批量";
+    renderGrid();
+  }
+  function renderGrid(){
+    const list = ARTISTS.filter(a=>selected.has(a));
+    const grid = $("#agrid");
+    if(!list.length){
+      grid.innerHTML = '<div class="ag-empty" id="agEmpty"><b>NO SELECTION</b>勾选左侧画师串，这里会按顺序出面板。</div>';
+      return;
+    }
+    grid.innerHTML = list.map(a=>{
+      const url = done.get(a);
+      return `<article class="frame" data-a="${a}">
+        <div class="fh"><b>${a}</b><span>${done.has(a) ? "完成" : "待生成"}</span></div>
+        <div class="fb ${url ? "has" : ""}">
+          <span class="ph">${url ? "" : "待生成"}</span>
+          ${url ? `<img src="${url}" alt="${a}">` : ""}
+        </div>
+        <div class="fa"><button type="button" data-save="${a}">保存</button></div>
+      </article>`;
+    }).join("");
+    $$("#agrid [data-save]").forEach(b=>b.addEventListener("click", async ()=>{
+      const a = b.dataset.save;
+      const url = done.get(a);
+      if(!url) return;
+      try{
+        await saveTo(null, url, fileName($("#aseed").value.trim() || "seed", a));
+        toast("已保存");
+      }catch(e){
+        showErr("#err2", "保存成图", e);
+      }
+    }));
+  }
+  function frameOf(a){ return $('#agrid .frame[data-a="' + a.replace(/"/g,"") + '"]'); }
+  function setFrame(a, state, text){
+    const f = frameOf(a);
+    if(!f) return;
+    const fb = f.querySelector(".fb");
+    const ph = f.querySelector(".ph");
+    fb.classList.toggle("busy", state === "busy");
+    if(state === "busy"){
+      if(ph) ph.innerHTML = "<i>出图中</i>" + a;
+      f.querySelector(".fh span").textContent = "进行中";
+    }else if(state === "fail"){
+      if(ph) ph.innerHTML = "没出成";
+      f.querySelector(".fh span").textContent = "失败";
+    }
+  }
+  async function runBatch(){
+    if(busy) return;
+    const list = ARTISTS.filter(a=>selected.has(a));
+    if(!list.length){ toast("先勾选画师串"); return; }
+    const prompt = $("#aprompt").value.trim();
+    if(!prompt){ toast("先写一句提示词"); $("#aprompt").focus(); return; }
+    if(!online && !(await probe())){ showErr("#err2","批量生成",new Error("出图服务未就绪")); return; }
+
+    hideErr("#err2");
+    busy = true;
+    $("#cmp").disabled = true;
+    const seed = $("#aseed").value.trim() || nowSeed();
+    $("#aseed").value = seed;
+    done = new Map();
+    renderGrid();
+
+    let failed = 0, lastFail = null;
+    for(let i=0;i<list.length;i++){
+      const a = list[i];
+      $("#cmp").querySelector("span:first-child").textContent = "生成中 " + (i+1) + " / " + list.length;
+      $("#cmpNote").textContent = "正在生成 " + a;
+      setFrame(a, "busy");
+      try{
+        const r = await generateOne({ prompt, seed, artist:a });
+        done.set(a, r.url);
+        const f = frameOf(a);
+        if(f){
+          const fb = f.querySelector(".fb");
+          const ph = f.querySelector(".ph");
+          if(ph) ph.textContent = "";
+          fb.classList.remove("busy");
+          fb.classList.add("has");
+          const img = document.createElement("img");
+          img.src = r.url; img.alt = a;
+          fb.appendChild(img);
+          f.querySelector(".fh span").textContent = (r.ms/1000).toFixed(1) + "s";
+        }
+        if(dir2){
+          try{
+            await saveTo(dir2, r.url, fileName(seed, a));
+            const f2 = frameOf(a);
+            if(f2) f2.querySelector(".fa").style.display = "none";
+          }catch(e){
+            failed++; lastFail = e;
+            showErr("#err2", "保存成图（" + a + "）", e);
+          }
+        }
+      }catch(e){
+        failed++; lastFail = e;
+        setFrame(a, "fail");
+        showErr("#err2", "批量生成（" + a + "）", e);
+      }
+    }
+
+    $("#cmp").querySelector("span:first-child").textContent = "批量生成";
+    $("#cmpNote").textContent = "完成 " + (list.length - failed) + " / " + list.length;
+    busy = false;
+    $("#cmp").disabled = false;
+    if(failed){
+      toast("有 " + failed + " 张没出成");
+      if(lastFail) recordErr(lastFail, "批量生成");
+    }else{
+      toast("全部出好了");
+    }
+  }
+  $("#cmp").addEventListener("click", runBatch);
+  $("#retry2").addEventListener("click", runBatch);
+
+  $("#allA").addEventListener("click", ()=>{
+    if(busy) return;
+    selected = new Set(ARTISTS);
+    paintArtists(); onSelectionChange();
+  });
+  $("#noneA").addEventListener("click", ()=>{
+    if(busy) return;
+    selected.clear();
+    paintArtists(); onSelectionChange();
+  });
+
+  paintArtists();
+  onSelectionChange();
+
+  /* ---------------- tabs ---------------- */
+  $$(".tab").forEach(t=>t.addEventListener("click", ()=>{
+    $$(".tab").forEach(x=>{ x.classList.remove("on"); x.setAttribute("aria-selected","false"); });
+    $$(".panel").forEach(p=>p.classList.remove("on"));
+    t.classList.add("on"); t.setAttribute("aria-selected","true");
+    $("#p-" + t.dataset.tab).classList.add("on");
+  }));
+
+  /* ---------------- boot ---------------- */
+  probe();
+
+  const q = new URLSearchParams(location.search).get("prompt");
+  if(q){
+    promptEl.value = q;
+    $("#aprompt").value = q;
+    paintCount();
+  }
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,49 @@
+{
+  "69": {
+    "class_type": "UNETLoader",
+    "inputs": { "unet_name": "JANIMA_v10 (1).safetensors", "weight_dtype": "default" }
+  },
+  "2": {
+    "class_type": "CLIPLoader",
+    "inputs": { "clip_name": "qwen_3_06b_base.safetensors", "type": "stable_diffusion", "device": "default" }
+  },
+  "3": {
+    "class_type": "VAELoader",
+    "inputs": { "vae_name": "qwen_image_vae.safetensors" }
+  },
+  "5": {
+    "class_type": "CLIPTextEncode",
+    "inputs": { "clip": ["2", 0], "text": "1girl, solo, looking at viewer, upper body, simple background" }
+  },
+  "7": {
+    "class_type": "CLIPTextEncode",
+    "inputs": { "clip": ["2", 0], "text": "mosaic, censored, worst quality, low quality, score_1, score_2, score_3, characters, bad hands, extra fingers, six fingers, fused fingers, missing fingers, deformed hands, mutated hands, bad anatomy" }
+  },
+  "8": {
+    "class_type": "EmptyLatentImage",
+    "inputs": { "width": 960, "height": 1536, "batch_size": 1 }
+  },
+  "4": {
+    "class_type": "KSampler",
+    "inputs": {
+      "model": ["69", 0],
+      "positive": ["5", 0],
+      "negative": ["7", 0],
+      "latent_image": ["8", 0],
+      "seed": 475976676477698,
+      "steps": 30,
+      "cfg": 4,
+      "sampler_name": "er_sde",
+      "scheduler": "sgm_uniform",
+      "denoise": 1
+    }
+  },
+  "9": {
+    "class_type": "VAEDecode",
+    "inputs": { "samples": ["4", 0], "vae": ["3", 0] }
+  },
+  "74": {
+    "class_type": "SaveImage",
+    "inputs": { "images": ["9", 0], "filename_prefix": "Anima" }
+  }
+}
